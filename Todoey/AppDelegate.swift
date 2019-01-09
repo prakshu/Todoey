@@ -15,6 +15,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        //I'm just using it to print and to prove to you that our data has been saved somewhere even though it's not showing up.
+        //how we can use use a default to persist data.
+        print(NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).last! as String)
         // Override point for customization after application launch.
         return true
     }
