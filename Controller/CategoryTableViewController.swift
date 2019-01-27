@@ -65,7 +65,8 @@ class CategoryTableViewController: UITableViewController {
         let alert = UIAlertController(title: "Add new Category", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add", style: .default)
             
-        { (action) in
+        { 
+            (action) in
             let newCategory = Category(context: self.context)
             newCategory.name = textField.text!
             self.categoryArray.append(newCategory)
