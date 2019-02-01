@@ -7,18 +7,18 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 class CategoryTableViewController: UITableViewController {
+    
     //So let's create a variable called categories that is going to be an array of category objects and willinitialize it as an empty array.
-    var categoryArray = [Category]()
- 
+    //So instead of making it a forced unwrapped I'm going to add a question mark to this data type and make categories an optional.
+    var categoryArray : Results<Category>?
+ let realm = try! Realm()
     //The next thing we need to do is we need to grab a reference to the context that we're going to be using in order to create read update and destroy our data.
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
 
     override func viewDidLoad() {
-        print(FileManager.default.urls(for: .documentDirectory , in: .userDomainMask))
-       loadCategories()
+    loadCategories()
 
         super.viewDidLoad()
         
@@ -26,13 +26,14 @@ class CategoryTableViewController: UITableViewController {
     // MARK: - Table view data source
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return categoryArray.count
+        //So now instead of saying categories.count I'm going to say if category's is not nil then return categories.count.But if it is new then just return one.
+        return categoryArray?.count ?? 1
+        //So this is a new bit of syntax and this in swift is called the nil coalescing operator.
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
     {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-        let item = categoryArray[indexPath.row]
-        cell.textLabel?.text = item.name
+           cell.textLabel?.text = categoryArray?[indexPath.row].name ?? "No Categories Added yet"
 
         return cell
     }
@@ -50,7 +51,7 @@ class CategoryTableViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
        if let indexPath = tableView.indexPathForSelectedRow
        {
-        destinationVC.selectedCategory = categoryArray[indexPath.row]
+        destinationVC.selectedCategory = categoryArray?[indexPath.row]
         }
         // this is the index path that is going to identify the current row that is selected.
     }
@@ -67,10 +68,9 @@ class CategoryTableViewController: UITableViewController {
             
         { 
             (action) in
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             newCategory.name = textField.text!
-            self.categoryArray.append(newCategory)
-           self.saveCategories()
+           self.save(category: newCategory)
             
         }
         
@@ -87,11 +87,13 @@ class CategoryTableViewController: UITableViewController {
      }
     // MARK: - data manipulation methods
 
-    func saveCategories()
+    func save(category: Category)
     {
         do
         {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
         
         }
         catch
@@ -102,20 +104,11 @@ class CategoryTableViewController: UITableViewController {
         self.tableView.reloadData()
         
     }
-    func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest())
-        
+    func loadCategories()
     {
-        do
-        {
-            categoryArray =    try context.fetch(request)
-        }
-        catch
-        {
-            print("error fetching data from context \(error)")
-        }
-        self.tableView.reloadData()
-        
-        
-    }
 
+    categoryArray = realm.objects(Category.self)
+        tableView.reloadData()
+
+}
 }
